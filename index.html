@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Envío Automático de WhatsApp</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <h1>📤 Envío Automático de WhatsApp</h1>
+
+  <div class="contenedor">
+    <label for="excelFile">📁 Cargar archivo Excel (.xlsx):</label>
+    <input type="file" id="excelFile" accept=".xlsx" />
+    <button id="btnCargar">Cargar contactos</button>
+  </div>
+
+  <!-- Tabla de contactos -->
+  <div id="contenedor-tabla" style="display:none;">
+    <table id="tabla-contactos">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Número</th>
+          <th>Caso</th>
+          <th>Mensaje generado</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- Controles de envío -->
+    <div id="botonesEnvio" style="display:none; margin-top: 15px;">
+      <button id="btnIniciar">Iniciar envío</button>
+      <button id="btnSiguiente" disabled>Siguiente</button>
+      <div id="contador" style="margin-top:10px; font-weight:bold; color:#007bff;"></div>
+    </div>
+  </div>
+
+  <!-- Librería XLSX -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+  <!-- Script principal -->
+  <script src="script.js"></script>
+</body>
+</html>
