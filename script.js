@@ -4,17 +4,17 @@ document.addEventListener("DOMContentLoaded", () => {
   let enviados = 0;
   let omitidos = 0;
 
-  const $tablaBody     = document.querySelector("#tabla-contactos tbody");
-  const $wrapTabla     = document.getElementById("contenedor-tabla");
-  const $botones       = document.getElementById("botonesEnvio");
-  const $btnCargar     = document.getElementById("btnCargar");
-  const $btnIniciar    = document.getElementById("btnIniciar");
-  const $btnSiguiente  = document.getElementById("btnSiguiente");
-  const $contador      = document.getElementById("contador");
+  const $tablaBody = document.querySelector("#tabla-contactos tbody");
+  const $wrapTabla = document.getElementById("contenedor-tabla");
+  const $botones = document.getElementById("botonesEnvio");
+  const $btnCargar = document.getElementById("btnCargar");
+  const $btnIniciar = document.getElementById("btnIniciar");
+  const $btnSiguiente = document.getElementById("btnSiguiente");
+  const $contador = document.getElementById("contador");
+  const $btnModo = document.getElementById("modoBtn");
 
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-  // Mensaje por defecto (se puede editar en la tabla)
   const generarMensaje = (nombre, caso) =>
 `Buenas tardes ${nombre}! ¿Cómo le va?
 Mi nombre es Daysi, me comunico por ${caso} con la intención de brindarle asesoría legal, ya que nos figura en sistema que por el siniestro denunciado en ART, tiene una indemnización económica a su disposición, que cubre su aseguradora bajo la ley N°24.557 de Riesgos del Trabajo.
@@ -27,7 +27,7 @@ Si quiere cobrar de 3 a 5 meses, responda este mensaje y me estaré comunicando 
     $contador.textContent = `📊 Progreso: ${actual}/${total} • ✅ Enviados: ${enviados} • ⏭️ Omitidos: ${omitidos}`;
   };
 
-  // Cargar Excel
+  // === CARGAR EXCEL ===
   $btnCargar.addEventListener("click", async () => {
     const input = document.getElementById("excelFile");
     if (!input.files.length) {
@@ -42,36 +42,36 @@ Si quiere cobrar de 3 a 5 meses, responda este mensaje y me estaré comunicando 
       contactos = XLSX.utils.sheet_to_json(sheet);
 
       if (!contactos.length) {
-        alert("❌ El Excel no tiene filas o los encabezados no coinciden (Nombre | Apellido | Numero | Caso).");
+        alert("❌ El Excel no tiene filas válidas.");
         return;
       }
 
-      // Render tabla (mensaje editable)
       $tablaBody.innerHTML = "";
       contactos.forEach((fila) => {
-        const nombre  = String(fila.Nombre || "").trim();
-        const apellido= String(fila.Apellido || "").trim();
-        const numero  = String(fila.Numero || "").replace(/\D/g, ""); // solo dígitos
-        const caso    = String(fila.Caso || "").trim();
-        const msjBase = generarMensaje(nombre, caso);
+        const nombre = String(fila.Nombre || "").trim();
+        const apellido = String(fila.Apellido || "").trim();
+        const numero = String(fila.Numero || "").replace(/\D/g, "");
+        const caso = String(fila.Caso || "").trim();
+        const mensaje = generarMensaje(nombre, caso);
 
         const tr = document.createElement("tr");
 
         const tdNom = document.createElement("td"); tdNom.textContent = nombre;
         const tdApe = document.createElement("td"); tdApe.textContent = apellido;
         const tdNum = document.createElement("td"); tdNum.textContent = numero;
-        const tdCaso= document.createElement("td"); tdCaso.textContent = caso;
-
+        const tdCaso = document.createElement("td"); tdCaso.textContent = caso;
         const tdMsg = document.createElement("td");
-        tdMsg.className = "msg";          // CSS para respetar saltos de línea
-        tdMsg.contentEditable = "true";   // <-- editable por el usuario
-        tdMsg.textContent = msjBase;      // usamos textContent (seguro)
+        tdMsg.className = "msg";
+        tdMsg.contentEditable = "true";
+        tdMsg.textContent = mensaje;
 
         tr.append(tdNom, tdApe, tdNum, tdCaso, tdMsg);
         $tablaBody.appendChild(tr);
       });
 
-      indiceActual = 0; enviados = 0; omitidos = 0;
+      indiceActual = 0;
+      enviados = 0;
+      omitidos = 0;
       $wrapTabla.style.display = "block";
       $botones.style.display = "block";
       $btnIniciar.disabled = false;
@@ -84,19 +84,21 @@ Si quiere cobrar de 3 a 5 meses, responda este mensaje y me estaré comunicando 
     }
   });
 
-  // Iniciar envío
+  // === INICIAR ENVÍO ===
   $btnIniciar.addEventListener("click", () => {
     if (!contactos.length) {
       alert("⚠️ Primero cargá un archivo Excel válido.");
       return;
     }
-    indiceActual = 0; enviados = 0; omitidos = 0;
+    indiceActual = 0;
+    enviados = 0;
+    omitidos = 0;
     $btnIniciar.disabled = true;
     $btnSiguiente.disabled = false;
     abrirChat(indiceActual);
   });
 
-  // Siguiente
+  // === SIGUIENTE ===
   $btnSiguiente.addEventListener("click", async () => {
     indiceActual++;
     if (indiceActual < contactos.length) {
@@ -105,24 +107,25 @@ Si quiere cobrar de 3 a 5 meses, responda este mensaje y me estaré comunicando 
       $btnSiguiente.disabled = true;
       $btnIniciar.disabled = false;
       actualizarContador();
-      await sleep(200);
+      await sleep(300);
       alert(`✅ Finalizado.\nEnviados: ${enviados}\nOmitidos: ${omitidos}\nTotal: ${contactos.length}`);
     }
   });
 
-  // Abre WhatsApp usando el MENSAJE EDITADO de la tabla
+  // === ABRIR CHAT Y RESALTAR FILA ===
   function abrirChat(i) {
-    const tr = $tablaBody.querySelectorAll("tr")[i];
+    const filas = $tablaBody.querySelectorAll("tr");
+    const tr = filas[i];
     if (!tr) return;
 
     const celdas = tr.querySelectorAll("td");
     const nombre = celdas[0].innerText.trim();
-    const numero = celdas[2].innerText.replace(/\D/g, ""); // solo dígitos
-    const mensajeEditado = celdas[4].innerText;            // <-- lo que el usuario editó
+    const numero = celdas[2].innerText.replace(/\D/g, "");
+    const mensajeEditado = celdas[4].innerText;
 
-    // Resalta la fila activa
-    [...$tablaBody.querySelectorAll("tr")].forEach((row, idx) => {
-      row.style.background = idx === i ? "#fff9e6" : "";
+    // Resalta fila actual
+    filas.forEach((row, idx) => {
+      row.classList.toggle("activo", idx === i);
     });
 
     if (!numero) {
@@ -137,5 +140,19 @@ Si quiere cobrar de 3 a 5 meses, responda este mensaje y me estaré comunicando 
 
     enviados++;
     actualizarContador();
+  }
+
+  // === MODO OSCURO ===
+$btnModo.addEventListener("click", () => {
+  document.body.classList.add("fade-transition");
+  document.body.classList.toggle("dark");
+  localStorage.setItem("modoOscuro", document.body.classList.contains("dark"));
+  setTimeout(() => document.body.classList.remove("fade-transition"), 600);
+  });
+
+  // carga preferencia
+  if (localStorage.getItem("modoOscuro") === "true" ||
+      window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    document.body.classList.add("dark");
   }
 });

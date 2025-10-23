@@ -1,47 +1,52 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Envío Automático de WhatsApp</title>
-  <link rel="stylesheet" href="./src/css/styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mensajería Automática</title>
+  <link rel="stylesheet" href="./src/css/styles.css">
 </head>
 <body>
-  <h1>📤 Envío Automático de WhatsApp</h1>
+  <header>
+    <h1>📱 Envío Automático de WhatsApp</h1>
+    <p class="subtitle">Carga un Excel y envía mensajes personalizados</p>
+    <button id="modoBtn" style="margin-top:10px;">Modo Oscuro</button>
+  </header>
 
-  <div class="contenedor">
-    <label for="excelFile">📁 Cargar archivo Excel (.xlsx):</label>
-    <input type="file" id="excelFile" accept=".xlsx" />
-    <button id="btnCargar">Cargar contactos</button>
-  </div>
+  <main class="container">
+    <form id="formExcel">
+      <label for="excelFile">📂 Cargar archivo Excel (.xlsx)</label>
+      <input type="file" id="excelFile" accept=".xlsx" required>
+      <button type="button" id="btnCargar">Cargar contactos</button>
+    </form>
 
-  <!-- Tabla de contactos -->
-  <div id="contenedor-tabla" style="display:none;">
-    <table id="tabla-contactos">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Apellido</th>
-          <th>Número</th>
-          <th>Caso</th>
-          <th>Mensaje generado</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <section id="contenedor-tabla" style="display:none;">
+      <table id="tabla-contactos">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Número</th>
+            <th>Caso</th>
+            <th>Mensaje generado (editable)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="contador"></div>
 
-    <!-- Controles de envío -->
-    <div id="botonesEnvio" style="display:none; margin-top: 15px;">
-      <button id="btnIniciar">Iniciar envío</button>
-      <button id="btnSiguiente" disabled>Siguiente</button>
-      <div id="contador" style="margin-top:10px; font-weight:bold; color:#007bff;"></div>
-    </div>
-  </div>
+      <div id="botonesEnvio" style="display:none; margin-top:1rem;">
+        <button id="btnIniciar">▶️ Iniciar envío</button>
+        <button id="btnSiguiente" disabled>⏭️ Siguiente</button>
+      </div>
+    </section>
+  </main>
 
-  <!-- Librería XLSX -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <footer>
+     <a href="https://www.linkedin.com/in/luciano-g-verchelli/">Dev</a>
+  </footer>
 
-  <!-- Script principal -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
