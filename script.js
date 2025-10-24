@@ -15,11 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-  const generarMensaje = (nombre, caso) =>
-`Buenas tardes ${nombre}! ¿Cómo le va?
-Mi nombre es Daysi, me comunico por ${caso} con la intención de brindarle asesoría legal, ya que nos figura en sistema que por el siniestro denunciado en ART, tiene una indemnización económica a su disposición, que cubre su aseguradora bajo la ley N°24.557 de Riesgos del Trabajo.
-
-Si quiere cobrar de 3 a 5 meses, responda este mensaje y me estaré comunicando a la brevedad ya sea por este medio o mediante llamado. Gracias.`;
+  const generarMensaje = (nombre) =>
+`Hola ${nombre}! Mi nombre es Matías.
+Te contacto por tu accidente pasado por ART,  para saber cómo te encontrabas y cómo ibas con la evolución tu tratamiento.`;
 
   const actualizarContador = () => {
     const total = contactos.length;
