@@ -15,6 +15,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
+  // === VALIDACIÓN DE NÚMEROS ===
+  function validarNumero(numero) {
+    const num = String(numero).trim();
+    const soloNumeros = /^[0-9]+$/.test(num);
+    if (!soloNumeros) return false;
+    if (num.length < 11 || num.length > 15) return false;
+    if (num.startsWith("0")) return false;
+    return true;
+  }
+
   const generarMensaje = (nombre) =>
 `Hola ${nombre}! Mi nombre es Matías.
 Te contacto por tu accidente pasado por ART,  para saber cómo te encontrabas y cómo ibas con la evolución tu tratamiento.`;
@@ -51,6 +61,7 @@ Te contacto por tu accidente pasado por ART,  para saber cómo te encontrabas y 
         const numero = String(fila.Numero || "").replace(/\D/g, "");
         const caso = String(fila.Caso || "").trim();
         const mensaje = generarMensaje(nombre, caso);
+        const esValido = validarNumero(numero);
 
         const tr = document.createElement("tr");
 
@@ -63,7 +74,14 @@ Te contacto por tu accidente pasado por ART,  para saber cómo te encontrabas y 
         tdMsg.contentEditable = "true";
         tdMsg.textContent = mensaje;
 
-        tr.append(tdNom, tdApe, tdNum, tdCaso, tdMsg);
+        // ✅ Nueva columna visual: Validez
+        const tdValidez = document.createElement("td");
+        tdValidez.textContent = esValido ? "Válido ✅" : "Inválido ❌";
+        tdValidez.classList.add("validez");
+        tdValidez.style.color = esValido ? "#16a34a" : "#ef4444";
+        tdValidez.style.fontWeight = "600";
+
+        tr.append(tdNom, tdApe, tdNum, tdCaso, tdMsg, tdValidez);
         $tablaBody.appendChild(tr);
       });
 
@@ -126,10 +144,11 @@ Te contacto por tu accidente pasado por ART,  para saber cómo te encontrabas y 
       row.classList.toggle("activo", idx === i);
     });
 
-    if (!numero) {
+    // ✅ Validar antes de abrir chat
+    if (!numero || !validarNumero(numero)) {
       omitidos++;
       actualizarContador();
-      alert(`⏭️ ${nombre || "Contacto"} omitido: número vacío o inválido.`);
+      alert(`⏭️ ${nombre || "Contacto"} omitido: número vacío o inválido (${numero || "sin número"}).`);
       return;
     }
 
@@ -141,11 +160,11 @@ Te contacto por tu accidente pasado por ART,  para saber cómo te encontrabas y 
   }
 
   // === MODO OSCURO ===
-$btnModo.addEventListener("click", () => {
-  document.body.classList.add("fade-transition");
-  document.body.classList.toggle("dark");
-  localStorage.setItem("modoOscuro", document.body.classList.contains("dark"));
-  setTimeout(() => document.body.classList.remove("fade-transition"), 600);
+  $btnModo.addEventListener("click", () => {
+    document.body.classList.add("fade-transition");
+    document.body.classList.toggle("dark");
+    localStorage.setItem("modoOscuro", document.body.classList.contains("dark"));
+    setTimeout(() => document.body.classList.remove("fade-transition"), 600);
   });
 
   // carga preferencia
@@ -154,3 +173,5 @@ $btnModo.addEventListener("click", () => {
     document.body.classList.add("dark");
   }
 });
+
+

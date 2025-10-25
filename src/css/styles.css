@@ -256,3 +256,16 @@ body.dark #modoBtn:hover {
 body.fade-transition {
   transition: background-color 0.6s ease, color 0.6s ease;
 }
+
+/* Nueva columna de validez */
+td.validez {
+  text-align: center;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+body.dark td.validez {
+  color: #f87171;
+}
+
+
