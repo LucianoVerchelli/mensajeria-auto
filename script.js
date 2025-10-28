@@ -28,40 +28,66 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // === SISTEMA DE MENSAJES PREDETERMINADOS ===
-  const mensajesPredeterminados = JSON.parse(localStorage.getItem("plantillas")) || {
-    1: (nombre, caso) =>
+  const PLANTILLAS_BASE = {
+    "1": (nombre, caso) =>
       `Hola ${nombre}! Mi nombre es Matías.\nSolo quería saber cómo ibas con tu tratamiento o seguimiento.`,
-    2: (nombre, caso) =>
-      `Buenas tardes ${nombre}! Mi nombre es Daysi.\nMe comunico por ${caso}, con la intención de brindarle asesoría legal, ya que nos figura en sistema que por el siniestro denunciado en ART, tiene una indemnización económica a su disposición, que cubre su aseguradora bajo la ley N°24.557 de Riesgos del Trabajo.
-
-Si quiere cobrar de 3 a 5 meses, responda este mensaje y me estaré comunicando a la brevedad ya sea por este medio o mediante llamado. Gracias.`,
-    3: (nombre, caso) =>
-      `Hola ${nombre}! Espero que estés bien.\nNos comunicamos nuevamente respecto a su ${caso}, para saber si necesitás asistencia adicional o ya pudiste resolver tu situación.`
+    "2": (nombre, caso) =>
+      `Buenas tardes ${nombre}! Mi nombre es Daysi.\nMe comunico por ${caso}, con la intención de brindarte asesoría legal, ya que figura en sistema que tenés una indemnización económica disponible por el siniestro denunciado en ART bajo la ley N°24.557.`,
+    "3": (nombre, caso) =>
+      `Hola ${nombre}! Espero que estés bien.\nNos comunicamos nuevamente respecto a ${caso}, para saber si necesitás asistencia adicional o ya pudiste resolver tu situación.`
   };
 
-  // === ACTUALIZAR MENSAJES DE LA TABLA CUANDO SE CAMBIA LA PLANTILLA ===
+  let plantillasGuardadas = {};
+  try {
+    plantillasGuardadas = JSON.parse(localStorage.getItem("plantillas") || "{}");
+  } catch {
+    plantillasGuardadas = {};
+  }
+
+  const mensajesPredeterminados = { ...PLANTILLAS_BASE, ...plantillasGuardadas };
+
+  // === RELLENAR OPCIONES PERSONALIZADAS SI EXISTEN ===
+  const clavesCustom = Object.keys(plantillasGuardadas);
+  for (const key of clavesCustom) {
+    if (!$selectMensaje.querySelector(`option[value="${key}"]`)) {
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = `📝 Personalizada (${new Date(Number(key) || Date.now()).toLocaleDateString()})`;
+      $selectMensaje.appendChild(opt);
+    }
+  }
+
+  // === CAMBIO DE PLANTILLA ===
   $selectMensaje.addEventListener("change", () => {
     const opcion = $selectMensaje.value;
     const filas = document.querySelectorAll("#tabla-contactos tbody tr");
+    if (!filas.length) {
+      alert("⚠️ No hay contactos cargados para aplicar la plantilla.");
+      return;
+    }
+
+    if (!mensajesPredeterminados[opcion]) {
+      alert("⚠️ Plantilla no encontrada o inválida.");
+      return;
+    }
 
     filas.forEach((tr) => {
       const nombre = tr.children[0].innerText.trim();
       const caso = tr.children[3].innerText.trim();
       const tdMsg = tr.querySelector(".msg");
 
-      if (tdMsg && mensajesPredeterminados[opcion]) {
+      if (tdMsg) {
         tdMsg.textContent = mensajesPredeterminados[opcion](nombre, caso);
       }
     });
 
+    localStorage.setItem("plantillaSeleccionada", opcion);
     alert("✅ Mensajes actualizados según la plantilla seleccionada.");
   });
 
   // === GUARDAR PLANTILLA PERSONALIZADA ===
   $btnGuardar.addEventListener("click", () => {
-    const texto = prompt(
-      "💾 Escribí tu plantilla personalizada.\nUsá {nombre} y {caso} para reemplazar automáticamente."
-    );
+    const texto = prompt("💾 Escribí tu plantilla personalizada.\nUsá {nombre} y {caso} para reemplazar automáticamente.");
 
     if (!texto) return alert("⚠️ No se guardó la plantilla.");
 
@@ -79,7 +105,7 @@ Si quiere cobrar de 3 a 5 meses, responda este mensaje y me estaré comunicando 
   });
 
   // === GENERAR MENSAJE BASE ===
-  const generarMensaje = (nombre) =>
+  const generarMensaje = (nombre, caso) =>
     `Hola ${nombre}! Mi nombre es Matías.\nTe contacto por tu accidente pasado por ART, para saber cómo te encontrabas y cómo ibas con la evolución tu tratamiento.`;
 
   const actualizarContador = () => {

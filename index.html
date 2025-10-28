@@ -29,6 +29,7 @@
             <th>Número</th>
             <th>Caso</th>
             <th>Mensaje generado (editable)</th>
+            <th>Validez</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -38,20 +39,17 @@
       <div id="botonesEnvio" style="display:none; margin-top:1rem;">
         <button id="btnIniciar">▶️ Iniciar envío</button>
         <button id="btnSiguiente" disabled>⏭️ Siguiente</button>
-        
       </div>
 
-  <div id="plantillas">
-  <label for="mensajePredeterminado">📝 Mensaje predeterminado:</label>
-  <select id="mensajePredeterminado">
-    <option value="1">Seguimiento general</option>
-    <option value="2">Asesoría por ART</option>
-    <option value="3">Recordatorio de contacto</option>
-  </select>
-  <button id="btnGuardarPlantilla">💾 Guardar plantilla</button>
-</div>
-
-
+      <div id="plantillas">
+        <label for="mensajePredeterminado">📝 Seleccionar mensaje:</label>
+        <select id="mensajePredeterminado">
+          <option value="1">Opción 1 - Seguimiento general</option>
+          <option value="2">Opción 2 - Asesoría por ART</option>
+          <option value="3">Opción 3 - Recordatorio de contacto</option>
+        </select>
+        <button id="btnGuardarPlantilla">💾 Guardar plantilla personalizada</button>
+      </div>
     </section>
   </main>
 
