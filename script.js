@@ -12,8 +12,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const $btnSiguiente = document.getElementById("btnSiguiente");
   const $contador = document.getElementById("contador");
   const $btnModo = document.getElementById("modoBtn");
+  const $selectMensaje = document.getElementById("mensajePredeterminado");
+  const $btnGuardar = document.getElementById("btnGuardarPlantilla");
 
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   // === VALIDACIÓN DE NÚMEROS ===
   function validarNumero(numero) {
@@ -25,9 +27,60 @@ document.addEventListener("DOMContentLoaded", () => {
     return true;
   }
 
+  // === SISTEMA DE MENSAJES PREDETERMINADOS ===
+  const mensajesPredeterminados = JSON.parse(localStorage.getItem("plantillas")) || {
+    1: (nombre, caso) =>
+      `Hola ${nombre}! Mi nombre es Matías.\nSolo quería saber cómo ibas con tu tratamiento o seguimiento.`,
+    2: (nombre, caso) =>
+      `Buenas tardes ${nombre}! Mi nombre es Daysi.\nMe comunico por ${caso}, con la intención de brindarle asesoría legal, ya que nos figura en sistema que por el siniestro denunciado en ART, tiene una indemnización económica a su disposición, que cubre su aseguradora bajo la ley N°24.557 de Riesgos del Trabajo.
+
+Si quiere cobrar de 3 a 5 meses, responda este mensaje y me estaré comunicando a la brevedad ya sea por este medio o mediante llamado. Gracias.`,
+    3: (nombre, caso) =>
+      `Hola ${nombre}! Espero que estés bien.\nNos comunicamos nuevamente respecto a su ${caso}, para saber si necesitás asistencia adicional o ya pudiste resolver tu situación.`
+  };
+
+  // === ACTUALIZAR MENSAJES DE LA TABLA CUANDO SE CAMBIA LA PLANTILLA ===
+  $selectMensaje.addEventListener("change", () => {
+    const opcion = $selectMensaje.value;
+    const filas = document.querySelectorAll("#tabla-contactos tbody tr");
+
+    filas.forEach((tr) => {
+      const nombre = tr.children[0].innerText.trim();
+      const caso = tr.children[3].innerText.trim();
+      const tdMsg = tr.querySelector(".msg");
+
+      if (tdMsg && mensajesPredeterminados[opcion]) {
+        tdMsg.textContent = mensajesPredeterminados[opcion](nombre, caso);
+      }
+    });
+
+    alert("✅ Mensajes actualizados según la plantilla seleccionada.");
+  });
+
+  // === GUARDAR PLANTILLA PERSONALIZADA ===
+  $btnGuardar.addEventListener("click", () => {
+    const texto = prompt(
+      "💾 Escribí tu plantilla personalizada.\nUsá {nombre} y {caso} para reemplazar automáticamente."
+    );
+
+    if (!texto) return alert("⚠️ No se guardó la plantilla.");
+
+    const nuevaClave = Date.now().toString();
+    mensajesPredeterminados[nuevaClave] = (nombre, caso) =>
+      texto.replace("{nombre}", nombre).replace("{caso}", caso);
+
+    localStorage.setItem("plantillas", JSON.stringify(mensajesPredeterminados));
+
+    const option = document.createElement("option");
+    option.value = nuevaClave;
+    option.textContent = `📝 Personalizada (${new Date().toLocaleDateString()})`;
+    $selectMensaje.appendChild(option);
+    alert("✅ Plantilla guardada correctamente.");
+  });
+
+  // === GENERAR MENSAJE BASE ===
   const generarMensaje = (nombre) =>
-`Hola ${nombre}! Mi nombre es Matías.
-Te contacto por tu accidente pasado por ART,  para saber cómo te encontrabas y cómo ibas con la evolución tu tratamiento.`;
+    `Hola ${nombre}! Mi nombre es Matías.\nTe contacto por tu accidente pasado por ART, para saber cómo te encontrabas y cómo ibas con la evolución tu tratamiento.`;
 
   const actualizarContador = () => {
     const total = contactos.length;
@@ -74,7 +127,6 @@ Te contacto por tu accidente pasado por ART,  para saber cómo te encontrabas y 
         tdMsg.contentEditable = "true";
         tdMsg.textContent = mensaje;
 
-        // ✅ Nueva columna visual: Validez
         const tdValidez = document.createElement("td");
         tdValidez.textContent = esValido ? "Válido ✅" : "Inválido ❌";
         tdValidez.classList.add("validez");
@@ -139,12 +191,8 @@ Te contacto por tu accidente pasado por ART,  para saber cómo te encontrabas y 
     const numero = celdas[2].innerText.replace(/\D/g, "");
     const mensajeEditado = celdas[4].innerText;
 
-    // Resalta fila actual
-    filas.forEach((row, idx) => {
-      row.classList.toggle("activo", idx === i);
-    });
+    filas.forEach((row, idx) => row.classList.toggle("activo", idx === i));
 
-    // ✅ Validar antes de abrir chat
     if (!numero || !validarNumero(numero)) {
       omitidos++;
       actualizarContador();
@@ -167,11 +215,10 @@ Te contacto por tu accidente pasado por ART,  para saber cómo te encontrabas y 
     setTimeout(() => document.body.classList.remove("fade-transition"), 600);
   });
 
-  // carga preferencia
-  if (localStorage.getItem("modoOscuro") === "true" ||
-      window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  if (
+    localStorage.getItem("modoOscuro") === "true" ||
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  ) {
     document.body.classList.add("dark");
   }
 });
-
-
