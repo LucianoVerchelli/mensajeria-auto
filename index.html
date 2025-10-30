@@ -5,21 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mensajería Automática</title>
   <link rel="stylesheet" href="./src/css/styles.css">
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Librería XLSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-<body>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <header>
     <h1>📱 Envío Automático de WhatsApp</h1>
     <p class="subtitle">Carga un Excel y envía mensajes personalizados</p>
-    <button id="modoBtn" style="margin-top:10px;">Modo Oscuro</button>
+    <button id="modoBtn" style="margin-top:10px;">🌓 Modo Oscuro</button>
   </header>
 
   <main class="container">
+    <!-- CARGA DE ARCHIVO -->
     <form id="formExcel">
       <label for="excelFile">📂 Cargar archivo Excel (.xlsx)</label>
       <input type="file" id="excelFile" accept=".xlsx" required>
       <button type="button" id="btnCargar">Cargar contactos</button>
     </form>
 
+    <!-- TABLA DE CONTACTOS -->
     <section id="contenedor-tabla" style="display:none;">
       <table id="tabla-contactos">
         <thead>
@@ -34,13 +43,16 @@
         </thead>
         <tbody></tbody>
       </table>
+
       <div id="contador"></div>
 
+      <!-- BOTONES DE ENVÍO -->
       <div id="botonesEnvio" style="display:none; margin-top:1rem;">
         <button id="btnIniciar">▶️ Iniciar envío</button>
         <button id="btnSiguiente" disabled>⏭️ Siguiente</button>
       </div>
 
+      <!-- PLANTILLAS DE MENSAJES -->
       <div id="plantillas">
         <label for="mensajePredeterminado">📝 Seleccionar mensaje:</label>
         <select id="mensajePredeterminado">
@@ -54,12 +66,10 @@
   </main>
 
   <footer>
-     <a href="https://www.linkedin.com/in/luciano-g-verchelli/">Dev</a>
+    <p>Desarrollado por <a href="https://www.linkedin.com/in/luciano-g-verchelli/">Luciano Verchelli</a></p>
   </footer>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  <script src="script.js"></script>
+  <!-- SCRIPT PRINCIPAL COMO MÓDULO -->
+  <script type="module" src="./src/js/main.js"></script>
 </body>
 </html>
