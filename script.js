@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const mensajesPredeterminados = { ...PLANTILLAS_BASE, ...plantillasGuardadas };
 
-  // === RELLENAR OPCIONES PERSONALIZADAS SI EXISTEN ===
+  // === RELLENAR OPCIONES PERSONALIZADAS ===
   const clavesCustom = Object.keys(plantillasGuardadas);
   for (const key of clavesCustom) {
     if (!$selectMensaje.querySelector(`option[value="${key}"]`)) {
@@ -58,38 +58,66 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // === CAMBIO DE PLANTILLA ===
-  $selectMensaje.addEventListener("change", () => {
+  $selectMensaje.addEventListener("change", async () => {
     const opcion = $selectMensaje.value;
     const filas = document.querySelectorAll("#tabla-contactos tbody tr");
     if (!filas.length) {
-      alert("⚠️ No hay contactos cargados para aplicar la plantilla.");
-      return;
+      return Swal.fire({
+        icon: "warning",
+        title: "Sin contactos",
+        text: "No hay contactos cargados para aplicar la plantilla.",
+        confirmButtonColor: "#facc15",
+      });
     }
 
     if (!mensajesPredeterminados[opcion]) {
-      alert("⚠️ Plantilla no encontrada o inválida.");
-      return;
+      return Swal.fire({
+        icon: "error",
+        title: "Plantilla inválida",
+        text: "Plantilla no encontrada o incorrecta.",
+        confirmButtonColor: "#ef4444",
+      });
     }
 
     filas.forEach((tr) => {
       const nombre = tr.children[0].innerText.trim();
       const caso = tr.children[3].innerText.trim();
       const tdMsg = tr.querySelector(".msg");
-
       if (tdMsg) {
         tdMsg.textContent = mensajesPredeterminados[opcion](nombre, caso);
       }
     });
 
     localStorage.setItem("plantillaSeleccionada", opcion);
-    alert("✅ Mensajes actualizados según la plantilla seleccionada.");
+    Swal.fire({
+      icon: "success",
+      title: "Plantilla aplicada",
+      text: "Los mensajes fueron actualizados correctamente.",
+      confirmButtonColor: "#22c55e",
+    });
   });
 
   // === GUARDAR PLANTILLA PERSONALIZADA ===
-  $btnGuardar.addEventListener("click", () => {
-    const texto = prompt("💾 Escribí tu plantilla personalizada.\nUsá {nombre} y {caso} para reemplazar automáticamente.");
+  $btnGuardar.addEventListener("click", async () => {
+    const { value: texto } = await Swal.fire({
+      title: "Nueva plantilla",
+      input: "text",
+      inputLabel: "Escribí tu plantilla personalizada",
+      inputPlaceholder: "Usá {nombre} y {caso} para reemplazar automáticamente",
+      confirmButtonText: "Guardar",
+      confirmButtonColor: "#22c55e",
+      showCancelButton: true,
+      cancelButtonText: "Cancelar",
+    });
 
-    if (!texto) return alert("⚠️ No se guardó la plantilla.");
+    if (!texto) {
+      return Swal.fire({
+        icon: "info",
+        title: "Cancelado",
+        text: "No se guardó ninguna plantilla.",
+        confirmButtonColor: "#3b82f6",
+      });
+    }
 
     const nuevaClave = Date.now().toString();
     mensajesPredeterminados[nuevaClave] = (nombre, caso) =>
@@ -101,7 +129,13 @@ document.addEventListener("DOMContentLoaded", () => {
     option.value = nuevaClave;
     option.textContent = `📝 Personalizada (${new Date().toLocaleDateString()})`;
     $selectMensaje.appendChild(option);
-    alert("✅ Plantilla guardada correctamente.");
+
+    Swal.fire({
+      icon: "success",
+      title: "Plantilla guardada",
+      text: "Tu plantilla personalizada fue almacenada correctamente.",
+      confirmButtonColor: "#22c55e",
+    });
   });
 
   // === GENERAR MENSAJE BASE ===
@@ -118,8 +152,12 @@ document.addEventListener("DOMContentLoaded", () => {
   $btnCargar.addEventListener("click", async () => {
     const input = document.getElementById("excelFile");
     if (!input.files.length) {
-      alert("⚠️ Selecciona un archivo Excel (.xlsx) primero.");
-      return;
+      return Swal.fire({
+        icon: "warning",
+        title: "Archivo requerido",
+        text: "Selecciona un archivo Excel (.xlsx) primero.",
+        confirmButtonColor: "#facc15",
+      });
     }
 
     try {
@@ -129,8 +167,12 @@ document.addEventListener("DOMContentLoaded", () => {
       contactos = XLSX.utils.sheet_to_json(sheet);
 
       if (!contactos.length) {
-        alert("❌ El Excel no tiene filas válidas.");
-        return;
+        return Swal.fire({
+          icon: "error",
+          title: "Archivo vacío",
+          text: "El Excel no contiene filas válidas.",
+          confirmButtonColor: "#ef4444",
+        });
       }
 
       $tablaBody.innerHTML = "";
@@ -154,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tdMsg.textContent = mensaje;
 
         const tdValidez = document.createElement("td");
-        tdValidez.textContent = esValido ? "Válido ✅" : "Inválido ❌";
+        tdValidez.textContent = esValido ? "Válido" : "Inválido";
         tdValidez.classList.add("validez");
         tdValidez.style.color = esValido ? "#16a34a" : "#ef4444";
         tdValidez.style.fontWeight = "600";
@@ -162,6 +204,71 @@ document.addEventListener("DOMContentLoaded", () => {
         tr.append(tdNom, tdApe, tdNum, tdCaso, tdMsg, tdValidez);
         $tablaBody.appendChild(tr);
       });
+
+// === PAGINACIÓN DE CONTACTOS ===
+const filasPorPagina = 10;
+let paginaActual = 1;
+
+function mostrarPagina(pagina) {
+  const filas = Array.from($tablaBody.querySelectorAll("tr"));
+  const totalPaginas = Math.ceil(filas.length / filasPorPagina);
+  if (pagina < 1) pagina = 1;
+  if (pagina > totalPaginas) pagina = totalPaginas;
+  paginaActual = pagina;
+
+  filas.forEach((fila, i) => {
+    fila.style.display =
+      i >= (pagina - 1) * filasPorPagina && i < pagina * filasPorPagina
+        ? ""
+        : "none";
+  });
+
+  actualizarPaginacion(totalPaginas);
+}
+
+function actualizarPaginacion(totalPaginas) {
+  let paginacion = document.getElementById("paginacion");
+  if (!paginacion) {
+    paginacion = document.createElement("div");
+    paginacion.id = "paginacion";
+    paginacion.style.marginTop = "10px";
+    paginacion.style.textAlign = "center";
+    $wrapTabla.appendChild(paginacion);
+  }
+
+  paginacion.innerHTML = "";
+
+  // Botón Anterior
+  const btnPrev = document.createElement("button");
+  btnPrev.textContent = "⬅️";
+  btnPrev.className = "btn-pagina";
+  btnPrev.disabled = paginaActual === 1;
+  btnPrev.addEventListener("click", () => mostrarPagina(paginaActual - 1));
+  paginacion.appendChild(btnPrev);
+
+  // Números de páginas
+  for (let i = 1; i <= totalPaginas; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    btn.className = "btn-pagina";
+    if (i === paginaActual) btn.classList.add("activo");
+    btn.addEventListener("click", () => mostrarPagina(i));
+    paginacion.appendChild(btn);
+  }
+
+  // Botón Siguiente
+  const btnNext = document.createElement("button");
+  btnNext.textContent = "➡️";
+  btnNext.className = "btn-pagina";
+  btnNext.disabled = paginaActual === totalPaginas;
+  btnNext.addEventListener("click", () => mostrarPagina(paginaActual + 1));
+  paginacion.appendChild(btnNext);
+}
+
+// Mostrar la primera página al cargar
+mostrarPagina(1);
+
+
 
       indiceActual = 0;
       enviados = 0;
@@ -171,18 +278,34 @@ document.addEventListener("DOMContentLoaded", () => {
       $btnIniciar.disabled = false;
       $btnSiguiente.disabled = true;
       actualizarContador();
-      alert(`✅ Se cargaron ${contactos.length} contactos.`);
+
+      Swal.fire({
+        icon: "success",
+        title: "Contactos cargados",
+        text: `Se cargaron ${contactos.length} contactos correctamente.`,
+        confirmButtonColor: "#22c55e",
+      });
+
     } catch (e) {
       console.error(e);
-      alert("❌ Error leyendo el Excel. Verifica que sea .xlsx válido.");
+      Swal.fire({
+        icon: "error",
+        title: "Error de lectura",
+        text: "No se pudo leer el archivo Excel. Verifica que sea válido.",
+        confirmButtonColor: "#ef4444",
+      });
     }
   });
 
   // === INICIAR ENVÍO ===
   $btnIniciar.addEventListener("click", () => {
     if (!contactos.length) {
-      alert("⚠️ Primero cargá un archivo Excel válido.");
-      return;
+      return Swal.fire({
+        icon: "warning",
+        title: "Sin contactos",
+        text: "Primero cargá un archivo Excel válido.",
+        confirmButtonColor: "#facc15",
+      });
     }
     indiceActual = 0;
     enviados = 0;
@@ -202,15 +325,29 @@ document.addEventListener("DOMContentLoaded", () => {
       $btnIniciar.disabled = false;
       actualizarContador();
       await sleep(300);
-      alert(`✅ Finalizado.\nEnviados: ${enviados}\nOmitidos: ${omitidos}\nTotal: ${contactos.length}`);
+      Swal.fire({
+        icon: "success",
+        title: "Envío finalizado",
+        text: `Proceso completado.\nEnviados: ${enviados}\nOmitidos: ${omitidos}\nTotal: ${contactos.length}`,
+        confirmButtonColor: "#22c55e",
+      });
     }
   });
 
-  // === ABRIR CHAT Y RESALTAR FILA ===
+  // === ABRIR CHAT ===
   function abrirChat(i) {
     const filas = $tablaBody.querySelectorAll("tr");
     const tr = filas[i];
     if (!tr) return;
+    if (i > 0) {
+  const filaAnterior = filas[i - 1];
+  if (filaAnterior) {
+    filaAnterior.classList.remove("activo");
+    filaAnterior.classList.add("enviada");
+    const celdaMsg = filaAnterior.querySelector(".msg");
+    if (celdaMsg) celdaMsg.style.opacity = "0.7"; // levemente desvanecido
+  }
+}
 
     const celdas = tr.querySelectorAll("td");
     const nombre = celdas[0].innerText.trim();
@@ -222,7 +359,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!numero || !validarNumero(numero)) {
       omitidos++;
       actualizarContador();
-      alert(`⏭️ ${nombre || "Contacto"} omitido: número vacío o inválido (${numero || "sin número"}).`);
+      Swal.fire({
+        icon: "warning",
+        title: "Número omitido",
+        text: `${nombre || "Contacto"} tiene un número vacío o inválido (${numero || "sin número"}).`,
+        confirmButtonColor: "#facc15",
+      });
       return;
     }
 
@@ -246,5 +388,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.matchMedia("(prefers-color-scheme: dark)").matches
   ) {
     document.body.classList.add("dark");
+    Swal.update({ background: "#1f2937", color: "#f3f4f6" });
   }
 });

@@ -268,5 +268,96 @@ body.dark td.validez {
   color: #f87171;
 }
 
+select#mensajePredeterminado{
+   background-color: #1e293b; /* tono oscuro elegante */
+  color: #f8fafc; /* texto claro */
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+}
+
+#mensajePredeterminado:hover {
+  border-color: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+}
+
+/* Foco (cuando el usuario hace clic o tab) */
+#mensajePredeterminado:focus {
+  border-color: #4ade80;
+  outline: none;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.7);
+}
+
+/* Opciones del menú desplegable */
+#mensajePredeterminado option {
+  background-color: #0f172a;
+  color: #f1f5f9;
+  padding: 10px;
+  border: none;
+}
+
+/* Hover dentro del menú */
+#mensajePredeterminado option:hover {
+  background-color: #22c55e;
+  color: #0f172a;
+}
+
+div#plantillas{
+  padding-top: 20px;
+}
 
 
+/* === Paginación === */
+#paginacion {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+#paginacion .btn-pagina {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#paginacion .btn-pagina:hover {
+  background-color: #22c55e;
+  color: #111827;
+}
+
+#paginacion .btn-pagina.activo {
+  background-color: #22c55e;
+  color: #111827;
+  font-weight: 600;
+}
+
+
+tr.enviada {
+  position: relative;
+}
+
+tr.enviada::after {
+  content: "✅ Enviado";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  padding-top:2rem;
+  transform: translateY(-50%);
+  font-size: 0.9rem;
+  color: #22c55e;
+  font-weight: 600;
+}
