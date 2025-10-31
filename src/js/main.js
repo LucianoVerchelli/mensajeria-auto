@@ -45,8 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     contactos = await procesarExcel(input, $tablaBody, generarMensaje);
-
-    // ⚡ Crear paginación con control
     paginacionControl = crearPaginacion($tablaBody, $wrapTabla);
 
     enviados = omitidos = 0;
@@ -60,6 +58,80 @@ document.addEventListener("DOMContentLoaded", () => {
       icon: "success",
       title: "Contactos cargados",
       text: `Se cargaron ${contactos.length} contactos correctamente.`,
+      confirmButtonColor: "#22c55e",
+    });
+  });
+
+  // === CAMBIO DE PLANTILLA ===
+  $selectMensaje.addEventListener("change", () => {
+    const opcion = $selectMensaje.value;
+    const filas = document.querySelectorAll("#tabla-contactos tbody tr");
+    if (!filas.length) {
+      return Swal.fire({ icon: "warning", title: "Sin contactos", text: "No hay contactos cargados." });
+    }
+
+    // Recargar plantillas
+    const plantillasGuardadas = cargarPlantillasGuardadas();
+    const plantillas = { ...PLANTILLAS_BASE, ...plantillasGuardadas };
+    const clave = String(opcion).trim();
+
+    if (!plantillas[clave]) {
+      return Swal.fire({
+        icon: "error",
+        title: "Plantilla no encontrada",
+        text: "Seleccioná una plantilla válida o crea una nueva.",
+      });
+    }
+
+    filas.forEach((tr) => {
+      const nombre = tr.children[0].innerText.trim();
+      const caso = tr.children[3].innerText.trim();
+      const tdMsg = tr.querySelector(".msg");
+      if (tdMsg) tdMsg.textContent = plantillas[clave](nombre, caso);
+    });
+
+    Swal.fire({
+      icon: "success",
+      title: "Plantilla aplicada",
+      text: "Mensajes actualizados correctamente.",
+      confirmButtonColor: "#22c55e",
+    });
+  });
+
+  // === GUARDAR PLANTILLA PERSONALIZADA ===
+  $btnGuardar.addEventListener("click", async () => {
+    const { value: texto } = await Swal.fire({
+      title: "Nueva plantilla",
+      input: "text",
+      inputLabel: "Escribí tu plantilla personalizada",
+      inputPlaceholder: "Usá {nombre} y {caso} para reemplazar automáticamente",
+      confirmButtonText: "Guardar",
+      confirmButtonColor: "#22c55e",
+      showCancelButton: true,
+      cancelButtonText: "Cancelar",
+    });
+
+    if (!texto) {
+      return Swal.fire({
+        icon: "info",
+        title: "Cancelado",
+        text: "No se guardó ninguna plantilla.",
+        confirmButtonColor: "#3b82f6",
+      });
+    }
+
+    const nuevaClave = Date.now().toString();
+    guardarPlantilla(nuevaClave, texto); // ✅ Ahora usa la nueva función que guarda correctamente como texto
+
+    const option = document.createElement("option");
+    option.value = nuevaClave;
+    option.textContent = `📝 Personalizada (${new Date().toLocaleDateString()})`;
+    $selectMensaje.appendChild(option);
+
+    Swal.fire({
+      icon: "success",
+      title: "Plantilla guardada",
+      text: "Tu plantilla personalizada fue almacenada correctamente.",
       confirmButtonColor: "#22c55e",
     });
   });
@@ -82,11 +154,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (indiceActual < contactos.length) {
       abrirChat($tablaBody.querySelectorAll("tr"), indiceActual, enviados, omitidos, actualizarContador);
 
-      // 🔁 Avanzar automáticamente de página cuando se termine un bloque de 10
       if ((indiceActual + 1) % 10 === 0 && paginacionControl && paginacionControl.avanzarPagina) {
         paginacionControl.avanzarPagina();
       }
-
     } else {
       $btnSiguiente.disabled = true;
       $btnIniciar.disabled = false;

@@ -8,17 +8,26 @@ export const PLANTILLAS_BASE = {
     `Hola ${nombre}! Espero que estés bien.\nNos comunicamos nuevamente respecto a ${caso}, para saber si necesitás asistencia adicional o ya pudiste resolver tu situación.`
 };
 
+// 🔁 Cargar plantillas guardadas
 export function cargarPlantillasGuardadas() {
   try {
-    return JSON.parse(localStorage.getItem("plantillas") || "{}");
+    const data = JSON.parse(localStorage.getItem("plantillas") || "{}");
+    const result = {};
+    for (const key in data) {
+      const texto = data[key];
+      // reconstruimos la función
+      result[key] = (nombre, caso) =>
+        texto.replace("{nombre}", nombre).replace("{caso}", caso);
+    }
+    return result;
   } catch {
     return {};
   }
 }
 
-export function guardarPlantilla(nuevaClave, texto, mensajesPredeterminados) {
-  mensajesPredeterminados[nuevaClave] = (nombre, caso) =>
-    texto.replace("{nombre}", nombre).replace("{caso}", caso);
-
-  localStorage.setItem("plantillas", JSON.stringify(mensajesPredeterminados));
+// 💾 Guardar nueva plantilla
+export function guardarPlantilla(nuevaClave, texto) {
+  const plantillasActuales = JSON.parse(localStorage.getItem("plantillas") || "{}");
+  plantillasActuales[nuevaClave] = texto; // 🔹 guardamos solo el texto
+  localStorage.setItem("plantillas", JSON.stringify(plantillasActuales));
 }
